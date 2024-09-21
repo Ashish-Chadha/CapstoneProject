@@ -96,11 +96,13 @@ show_menu() {
     echo "   Revert the most recent optimization action."
     echo -e "${YELLOW}11. Set Resource Limits${RESET}"
     echo "   Set CPU and Memory usage limits for notifications."
-    echo -e "${YELLOW}12. Help${RESET}"
+    echo -e "${YELLOW}12. Recommend Actions${RESET}"
+    echo "   Gives you recommendations based off current resource status."
+    echo -e "${YELLOW}13. Help${RESET}"
     echo "   Get detailed information about each option."
-    echo -e "${YELLOW}13. Exit${RESET}"
+    echo -e "${YELLOW}14. Exit${RESET}"
     echo ""
-    echo -e "${MAGENTA}Enter your choice (1-13):${RESET}"
+    echo -e "${MAGENTA}Enter your choice (1-14):${RESET}"
 }
 
 # Function for Quick Optimization
@@ -368,6 +370,31 @@ set_resource_limits() {
     pause_and_clear
 }
 
+# Function to recommend actions based on CPU usage
+recommend_actions() {
+    echo -e "${BLUE}Analyzing CPU usage...${RESET}"
+    top_process=$(ps -eo pid,ppid,cmd,%cpu --sort=-%cpu | head -2 | tail -1)
+    cpu_usage=$(echo $top_process | awk '{print $4}')
+    pid=$(echo $top_process | awk '{print $1}')
+    cmd=$(echo $top_process | awk '{print $3}')
+    
+    if (( $(echo "$cpu_usage > 80.0" | bc -l) )); then
+        echo -e "${RED}High CPU usage detected: Process ${cmd} with PID $pid is using ${cpu_usage}% CPU.${RESET}"
+        echo -e "${YELLOW}Recommended Actions:${RESET}"
+        echo "1. Terminate the process (use 'kill $pid')."
+        echo "2. Lower its priority (use 'renice 19 $pid')."
+        echo "3. Limit the CPU usage (use 'cpulimit -p $pid -l 50')."
+    elif (( $(echo "$cpu_usage > 50.0" | bc -l) )); then
+        echo -e "${YELLOW}Moderate CPU usage detected: Process ${cmd} is using ${cpu_usage}% CPU.${RESET}"
+        echo -e "Recommended Actions:"
+        echo "1. Monitor the process or reduce its priority."
+        echo "2. Clear system cache to free up resources."
+    else
+        echo -e "${GREEN}CPU usage is normal. No immediate actions required.${RESET}"
+    fi
+    pause_and_clear
+}
+
 
 # Function for interactive help
 interactive_help() {
@@ -383,7 +410,8 @@ interactive_help() {
     echo "7. Kill zombie processes"
     echo "8. Clear cached memory"
     echo "9. Set Resource Limits"
-    echo "10. Back to Main Menu"
+    echo "10. Recommend Actions"
+    echo "11. Back to Main Menu"
     echo ""
     echo -e "${MAGENTA}Enter your choice (1-9):${RESET}"
     read help_choice
@@ -428,7 +456,11 @@ interactive_help() {
             echo -e "${CYAN}Sets Resource Limits for Notifications:${RESET}"
             echo "Allows you to set limits for your system, which will later provide you with notifications when they are breached."
 	    ;;
-        10)
+     	10)
+      	    echo -e "${CYAN}Gives Recommendtions on Actions to take for Optimisation:${RESET}"
+            echo "Gives you a recommendation of what potential actions can be taken depending on the current state of the recources being consumed."
+	    ;;
+        11)
             return
             ;;
         *)
@@ -493,18 +525,22 @@ while true; do
             check_resource_limits
             set_resource_limits
             ;;
-        12)
+	12)
+ 	    check_resource_limits
+      	    recommend_actions
+	    ;;
+        13)
             check_resource_limits
             interactive_help
             ;;
-        13)
+        14)
             check_resource_limits
             echo -e "${BLUE}Exiting the program. Goodbye!${RESET}"
             break
             ;;
         *)
             check_resource_limits
-            echo -e "${RED}Invalid option. Please select a valid option (1-13).${RESET}"
+            echo -e "${RED}Invalid option. Please select a valid option (1-14).${RESET}"
             pause_and_clear
             ;;
     esac
