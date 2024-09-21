@@ -381,9 +381,9 @@ recommend_actions() {
     if (( $(echo "$cpu_usage > 80.0" | bc -l) )); then
         echo -e "${RED}High CPU usage detected: Process ${cmd} with PID $pid is using ${cpu_usage}% CPU.${RESET}"
         echo -e "${YELLOW}Recommended Actions:${RESET}"
-        echo "1. Terminate the process (use 'kill $pid')."
-        echo "2. Lower its priority (use 'renice 19 $pid')."
-        echo "3. Limit the CPU usage (use 'cpulimit -p $pid -l 50')."
+        echo "1. Terminate the process (Use Option 3: Terminate a Process and enter $pid or use 'kill $pid')."
+        echo "2. Lower its priority (Use Option 4: Lower Process Priority and enter $pid or use 'renice 19 $pid')."
+        echo "3. Limit the CPU usage (Use Option 5: Limit CPU usage and enter $pid or use 'cpulimit -p $pid -l 50')."
     elif (( $(echo "$cpu_usage > 50.0" | bc -l) )); then
         echo -e "${YELLOW}Moderate CPU usage detected: Process ${cmd} is using ${cpu_usage}% CPU.${RESET}"
         echo -e "Recommended Actions:"
