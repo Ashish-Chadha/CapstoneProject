@@ -297,6 +297,7 @@ monitor_high_latency() {
     echo -e "${BLUE}Checking network latency...${RESET}"
     default_threshold=100 # ms, default latency threshold
 
+    # Ask user for latency threshold
     echo -e "${MAGENTA}Enter a network latency threshold in ms (current: $default_threshold):${RESET}"
     read latency_threshold
     if ! [[ "$latency_threshold" =~ ^[0-9]+$ ]]; then
@@ -310,18 +311,44 @@ monitor_high_latency() {
         echo -e "${RED}Unable to retrieve network latency.${RESET}"
     else
         echo -e "${GREEN}Average latency: ${latency}ms.${RESET}"
+        
         if (( $(echo "$latency > $latency_threshold" | bc -l) )); then
             echo -e "${RED}Warning: High network latency detected (${latency}ms > ${latency_threshold}ms).${RESET}"
-            echo -e "${MAGENTA}Would you like to run network diagnostics? (y/n):${RESET}"
+
+            echo -e "${MAGENTA}Would you like to run network diagnostics and get a simplified report? (y/n):${RESET}"
             read confirm
             if [ "$confirm" == "y" ]; then
                 echo -e "${BLUE}Running network diagnostics...${RESET}"
-                netstat -i
+                
+                # Display a simplified version of network diagnostics using netstat and explain key points
+                echo -e "${YELLOW}Checking network interface statistics...${RESET}"
+                netstat_output=$(netstat -i)
+
+                # Parse netstat output for user-friendly information
+                echo -e "${GREEN}Network Diagnostics Report:${RESET}"
+                echo "$netstat_output" | awk '
+                    BEGIN { print "\nNetwork Interface Summary:\n" }
+                    NR==1 { print $0; next }  # Print header
+                    {
+                        iface=$1; rx_errs=$4; tx_errs=$8; dropped=$11;
+                        printf("Interface: %s\n", iface);
+                        printf("  RX Errors: %s\n", rx_errs);
+                        printf("  TX Errors: %s\n", tx_errs);
+                        printf("  Dropped Packets: %s\n", dropped);
+                        print "-------------------------";
+                    }'
+
+                echo -e "${YELLOW}\nWhat this means:${RESET}"
+                echo -e "${BLUE}RX Errors${RESET}: Number of errors in receiving data packets."
+                echo -e "${BLUE}TX Errors${RESET}: Number of errors in sending data packets."
+                echo -e "${BLUE}Dropped Packets${RESET}: Number of packets lost due to congestion or other network issues."
+                echo -e "${GREEN}If these numbers are high, it could indicate network issues causing latency.${RESET}"
             fi
         else
             echo -e "${GREEN}Network latency is within acceptable limits.${RESET}"
         fi
     fi
+
     log_action "Checked network latency: ${latency}ms."
     pause_and_clear
 }
