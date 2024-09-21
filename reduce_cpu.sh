@@ -90,19 +90,21 @@ show_menu() {
     echo "   Terminate processes that are no longer active."
     echo -e "${YELLOW}8. Clear cached memory${RESET}"
     echo "   Free up system memory by clearing cache."
-    echo -e "${YELLOW}9. View optimization log${RESET}"
+    echo -e "${YELLOW}9. Monitor High Latency${RESET}"
+    echo "   Check and Monitor Netowrk Latency."
+    echo -e "${YELLOW}10. View optimization log${RESET}"
     echo "   Display a log of all actions performed."
-    echo -e "${YELLOW}10. Undo last action${RESET}"
+    echo -e "${YELLOW}11. Undo last action${RESET}"
     echo "   Revert the most recent optimization action."
-    echo -e "${YELLOW}11. Set Resource Limits${RESET}"
+    echo -e "${YELLOW}12. Set Resource Limits${RESET}"
     echo "   Set CPU and Memory usage limits for notifications."
-    echo -e "${YELLOW}12. Recommend Actions${RESET}"
+    echo -e "${YELLOW}13. Recommend Actions${RESET}"
     echo "   Gives you recommendations based off current resource status."
-    echo -e "${YELLOW}13. Help${RESET}"
+    echo -e "${YELLOW}14. Help${RESET}"
     echo "   Get detailed information about each option."
-    echo -e "${YELLOW}14. Exit${RESET}"
+    echo -e "${YELLOW}15. Exit${RESET}"
     echo ""
-    echo -e "${MAGENTA}Enter your choice (1-14):${RESET}"
+    echo -e "${MAGENTA}Enter your choice (1-15):${RESET}"
 }
 
 # Function for Quick Optimization
@@ -111,6 +113,7 @@ quick_optimization() {
     stop_unnecessary_services "silent"
     clear_cached_memory "silent"
     kill_zombie_processes "silent"
+    monitor_high_latency "silent"
     echo -e "${GREEN}Quick Optimization completed successfully.${RESET}"
     log_action "Performed Quick Optimization."
     pause_and_clear
@@ -289,6 +292,40 @@ clear_cached_memory() {
     fi
 }
 
+# Function to monitor network latency
+monitor_high_latency() {
+    echo -e "${BLUE}Checking network latency...${RESET}"
+    default_threshold=100 # ms, default latency threshold
+
+    echo -e "${MAGENTA}Enter a network latency threshold in ms (current: $default_threshold):${RESET}"
+    read latency_threshold
+    if ! [[ "$latency_threshold" =~ ^[0-9]+$ ]]; then
+        latency_threshold=$default_threshold
+    fi
+
+    echo -e "${YELLOW}Pinging google.com to check for latency...${RESET}"
+    latency=$(ping -c 4 google.com | tail -1 | awk -F '/' '{print $5}') # Get average latency in ms
+
+    if [[ -z "$latency" ]]; then
+        echo -e "${RED}Unable to retrieve network latency.${RESET}"
+    else
+        echo -e "${GREEN}Average latency: ${latency}ms.${RESET}"
+        if (( $(echo "$latency > $latency_threshold" | bc -l) )); then
+            echo -e "${RED}Warning: High network latency detected (${latency}ms > ${latency_threshold}ms).${RESET}"
+            echo -e "${MAGENTA}Would you like to run network diagnostics? (y/n):${RESET}"
+            read confirm
+            if [ "$confirm" == "y" ]; then
+                echo -e "${BLUE}Running network diagnostics...${RESET}"
+                netstat -i
+            fi
+        else
+            echo -e "${GREEN}Network latency is within acceptable limits.${RESET}"
+        fi
+    fi
+    log_action "Checked network latency: ${latency}ms."
+    pause_and_clear
+}
+
 # Function to view optimization log
 view_optimization_log() {
     if [ -f "$LOG_FILE" ]; then
@@ -409,11 +446,12 @@ interactive_help() {
     echo "6. Stop unnecessary services"
     echo "7. Kill zombie processes"
     echo "8. Clear cached memory"
-    echo "9. Set Resource Limits"
-    echo "10. Recommend Actions"
-    echo "11. Back to Main Menu"
+    echo "9. Check Netork Latency"
+    echo "10. Set Resource Limits"
+    echo "11. Recommend Actions"
+    echo "12. Back to Main Menu"
     echo ""
-    echo -e "${MAGENTA}Enter your choice (1-9):${RESET}"
+    echo -e "${MAGENTA}Enter your choice (1-12):${RESET}"
     read help_choice
     clear
     case $help_choice in
@@ -453,14 +491,18 @@ interactive_help() {
             echo "Frees up system memory by clearing cached data that is no longer needed."
             ;;
 	9)
+            echo -e "${CYAN}Monitors and Check Network Latency:${RESET}"
+            echo "Pings a reliable server (e.g., google.com) to check for network latency and then runs network diagnostics if latency exceeds the user-defined threshold."
+	    ;;
+	10)
             echo -e "${CYAN}Sets Resource Limits for Notifications:${RESET}"
             echo "Allows you to set limits for your system, which will later provide you with notifications when they are breached."
 	    ;;
-     	10)
+     	11)
       	    echo -e "${CYAN}Gives Recommendtions on Actions to take for Optimisation:${RESET}"
             echo "Gives you a recommendation of what potential actions can be taken depending on the current state of the recources being consumed."
 	    ;;
-        11)
+        12)
             return
             ;;
         *)
@@ -515,32 +557,36 @@ while true; do
             ;;
         9)
             check_resource_limits
-            view_optimization_log
+            monitor_high_latency
             ;;
         10)
             check_resource_limits
-            undo_last_action
+            view_optimization_log
             ;;
         11)
             check_resource_limits
+            undo_last_action
+            ;;
+        12)
+            check_resource_limits
             set_resource_limits
             ;;
-	12)
+	13)
  	    check_resource_limits
       	    recommend_actions
 	    ;;
-        13)
+        14)
             check_resource_limits
             interactive_help
             ;;
-        14)
+        15)
             check_resource_limits
             echo -e "${BLUE}Exiting the program. Goodbye!${RESET}"
             break
             ;;
         *)
             check_resource_limits
-            echo -e "${RED}Invalid option. Please select a valid option (1-14).${RESET}"
+            echo -e "${RED}Invalid option. Please select a valid option (1-15).${RESET}"
             pause_and_clear
             ;;
     esac
