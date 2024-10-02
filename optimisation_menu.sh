@@ -38,15 +38,11 @@ update_program() {
     fi
 
     # Replace existing files in the scripts folder
-    if [[ -d "scripts" ]]; then
-        rm -rf scripts/*
-        cp -r temp_repo/scripts/* scripts/
-        echo -e "${GREEN}Program Updated: Please Restart.${NC}"
-        log_action "Program updated from GitHub."
-    else
-        echo -e "${RED}Error: 'scripts' directory does not exist.${NC}"
-    fi
-
+    rm -rf *.sh # Clear previous scripts
+    cp -r temp_repo/scripts/*.sh . # Copy new scripts to current directory
+    echo -e "${GREEN}Program Updated: Please Restart.${NC}"
+    log_action "Program updated from GitHub."
+    
     # Clean up
     rm -rf temp_repo
     exit 0
