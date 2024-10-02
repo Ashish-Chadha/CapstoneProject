@@ -72,7 +72,7 @@ show_top_processes() {
 # Function to display the main menu
 show_menu() {
     echo -e "${GREEN}=============================="
-    echo "      CPU Optimisation Menu      "
+    echo "      CPU & Memory Optimisation Menu      "
     echo "==============================${RESET}"
     echo -e "${YELLOW}1. Quick Optimization${RESET}"
     echo "   Perform recommended optimizations automatically."
