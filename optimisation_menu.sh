@@ -10,6 +10,10 @@ NC='\033[0m' # No color
 # Log file location
 LOG_FILE="history_log.txt"
 
+# GitHub repository URL
+REPO_URL="https://github.com/Ashish-Chadha/CapstoneProject.git"
+SCRIPT_DIR="./scripts"  # Directory where scripts are stored
+
 # Log function to record user actions
 log_action() {
     echo "$(date +'%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE"
@@ -36,8 +40,35 @@ show_help() {
     echo -e "${GREEN}3. Reduce CPU Usage${NC} - Runs a script to reduce CPU usage by terminating or lowering process priorities."
     echo -e "${GREEN}4. View Consumption History${NC} - Displays historical CPU and memory usage with sar."
     echo -e "${GREEN}5. Exit${NC} - Exits the script."
+    echo -e "${GREEN}6. Update Program${NC} - Fetches the latest version of the program from the GitHub repository."
     echo -e "${GREEN}h. Help Menu${NC} - Displays this help menu."
     echo -e "${CYAN}==============================${NC}"
+}
+
+# Function to update the program
+update_program() {
+    if check_dependency "git"; then
+        echo -e "${CYAN}Updating program from GitHub...${NC}"
+        log_action "Selected: Update Program"
+
+        # Clone or update the repository
+        if [ -d "$SCRIPT_DIR" ]; then
+            echo -e "${CYAN}Updating existing repository...${NC}"
+            git -C "$SCRIPT_DIR" pull
+        else
+            echo -e "${CYAN}Cloning repository...${NC}"
+            git clone "$REPO_URL" "$SCRIPT_DIR"
+        fi
+
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}Program Updated. Please Restart.${NC}"
+            log_action "Program updated successfully"
+            exit 0
+        else
+            echo -e "${RED}Failed to update the program. Please check your connection or permissions.${NC}"
+            log_action "Program update failed"
+        fi
+    fi
 }
 
 # Main menu
@@ -53,11 +84,12 @@ while true; do
     echo -e "${GREEN}3. Reduce CPU Usage${NC}"
     echo -e "${GREEN}4. View Consumption History${NC}"
     echo -e "${GREEN}5. Exit${NC}"
+    echo -e "${GREEN}6. Update Program${NC}"
     echo -e "${GREEN}h. Help Menu${NC}"
     echo -e "${CYAN}==============================${NC}"
 
     # Prompt user for input
-    read -p "Enter your choice (1/2/3/4/5/h): " choice
+    read -p "Enter your choice (1/2/3/4/5/6/h): " choice
 
     # Handle the user input with case
     case "$choice" in
@@ -95,12 +127,15 @@ while true; do
             log_action "Exiting script"
             exit 0
             ;;
+        6)
+            update_program
+            ;;
         h)
             log_action "Selected: Help Menu"
             show_help
             ;;
         *)
-            echo -e "${RED}Invalid choice. Please select a valid option (1/2/3/4/5/h).${NC}"
+            echo -e "${RED}Invalid choice. Please select a valid option (1/2/3/4/5/6/h).${NC}"
             log_action "Invalid choice selected: $choice"
             ;;
     esac
