@@ -128,7 +128,7 @@ while true; do
     echo -e "${CYAN}==============================${NC}"
 
     # Prompt user for input
-    read -p "Enter your choice (1/2/3/4/5/6//7/8/h): " choice
+    read -p "Enter your choice (1/2/3/4/5/6/7/8/h): " choice
 
     # Handle the user input with case
     case "$choice" in
@@ -176,7 +176,7 @@ while true; do
             show_help
             ;;
         *)
-            echo -e "${RED}Invalid choice. Please select a valid option (1/2/3/4/5/6/h).${NC}"
+            echo -e "${RED}Invalid choice. Please select a valid option (1/2/3/4/5/6/7/8/h).${NC}"
             log_action "Invalid choice selected: $choice"
             ;;
     esac
