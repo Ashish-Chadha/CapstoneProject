@@ -74,6 +74,40 @@ show_help() {
     echo -e "${CYAN}==============================${NC}"
 }
 
+# Function to display the Admin Guide
+show_admin_guide() {
+    echo -e "${CYAN}==============================${NC}"
+    echo -e "${YELLOW}       Admin's Guide           ${NC}"
+    echo -e "${CYAN}==============================${NC}"
+    echo -e "${GREEN}This guide covers how to manage and optimize the VM, including:${NC}"
+    echo -e "${GREEN}1. System monitoring and performance tracking${NC}"
+    echo -e "${GREEN}2. Updating and maintaining drivers${NC}"
+    echo -e "${GREEN}3. Running the reduce_cpu script for optimization${NC}"
+    echo -e "${GREEN}4. Keeping the system secure and updated${NC}"
+    echo -e "${GREEN}5. Viewing user consumption history - make sure to view the logs within the files or through the system${NC}"
+    echo -e "${CYAN}==============================${NC}"
+}
+
+# Function to handle admin guide access
+admin_guide_access() {
+    if [[ $EUID -ne 0 ]]; then
+        echo -e "${YELLOW}This operation requires root access. Please enter your password to proceed.${NC}"
+        sudo -k # Force asking for password
+        if sudo true; then
+            echo -e "${GREEN}Access granted! Displaying Admin's Guide...${NC}"
+            log_action "Admin Guide accessed by a user with root privilege"
+            show_admin_guide
+        else
+            echo -e "${RED}Access denied! Incorrect password.${NC}"
+            log_action "Failed attempt to access Admin Guide"
+        fi
+    else
+        echo -e "${GREEN}You are logged in as root. Displaying Admin's Guide...${NC}"
+        log_action "Admin Guide accessed by root user"
+        show_admin_guide
+    fi
+}
+
 # Main menu
 clear
 trap "echo 'Exiting...'; exit" SIGINT
@@ -88,12 +122,13 @@ while true; do
     echo -e "${GREEN}4. View Consumption History${NC}"
     echo -e "${GREEN}5. Update CPU and Memory Reduction Program${NC}"
     echo -e "${GREEN}6. Update VM Drivers${NC}"
-    echo -e "${GREEN}7. Exit${NC}"
+    echo -e "${GREEN}7. Admin Guide (Restricted Access)${NC}"
+    echo -e "${GREEN}8. Exit${NC}"
     echo -e "${GREEN}h. Help Menu${NC}"
     echo -e "${CYAN}==============================${NC}"
 
     # Prompt user for input
-    read -p "Enter your choice (1/2/3/4/5/6//7/h): " choice
+    read -p "Enter your choice (1/2/3/4/5/6//7/8/h): " choice
 
     # Handle the user input with case
     case "$choice" in
@@ -129,6 +164,9 @@ while true; do
             update_drivers
             ;;
         7)
+            admin_guide_access
+            ;;
+        8)
             echo -e "${GREEN}Exiting. Goodbye!${NC}"
             log_action "Exiting script"
             exit 0
