@@ -38,6 +38,27 @@ update_reduce_cpu_script() {
     fi
 }
 
+# Function to update drivers
+update_drivers() {
+    echo "Checking for available driver updates..."
+    
+    # Check for available updates related to drivers
+    if dnf check-update | grep -i driver; then
+        echo "Drivers available for update. Proceeding with update..."
+        
+        # Update all available drivers
+        sudo dnf update -y $(dnf check-update | grep -i driver | awk '{print $1}')
+        
+        echo "Driver updates completed."
+    else
+        echo "No driver updates available."
+    fi
+    
+    # Provide feedback to the user
+    echo "Update driver process complete."
+}
+
+
 # Function to display the help menu
 show_help() {
     echo -e "${CYAN}==============================${NC}"
@@ -66,12 +87,13 @@ while true; do
     echo -e "${GREEN}3. Reduce CPU Usage${NC}"
     echo -e "${GREEN}4. View Consumption History${NC}"
     echo -e "${GREEN}5. Update CPU and Memory Reduction Program${NC}"
-    echo -e "${GREEN}6. Exit${NC}"
+    echo -e "${GREEN}6. Update VM Drivers${NC}"
+    echo -e "${GREEN}7. Exit${NC}"
     echo -e "${GREEN}h. Help Menu${NC}"
     echo -e "${CYAN}==============================${NC}"
 
     # Prompt user for input
-    read -p "Enter your choice (1/2/3/4/5/6/h): " choice
+    read -p "Enter your choice (1/2/3/4/5/6//7/h): " choice
 
     # Handle the user input with case
     case "$choice" in
@@ -104,6 +126,9 @@ while true; do
             update_reduce_cpu_script
             ;;
         6)
+            update_drivers
+            ;;
+        7)
             echo -e "${GREEN}Exiting. Goodbye!${NC}"
             log_action "Exiting script"
             exit 0
